@@ -1,4 +1,5 @@
 from vars import *
+from utils import *
 
 
 def get_next_token():
@@ -21,8 +22,8 @@ def get_next_token():
             line += 1
         state = get_next_state(state, char)
         if state in Accepting_States:
-            token = create_token(state, program[start:forward+1], line)
-            program = program[forward+1:]
+            token = create_token(state, program[start:forward + 1], line)
+            program = program[forward + 1:]
             return token
         else:
             forward += 1
@@ -30,11 +31,41 @@ def get_next_token():
 
 def get_next_state(state, c):
     if state == START:
-        if c in Blanks:
-            return WHS
-        elif c in Symbols:
+        if is_eof(c):
+            pass  # TODO: later
+        elif is_blank(c):
+            return BLANK
+        elif is_letter(c):
+            return LET1
+        elif is_digit(c):
+            return DIG1
+        elif is_symbol(c):
             return SYMBOL
+        elif c == '=':
+            return EQ1
+        elif c == '/':
+            return CMT1
 
+    elif state == LET1:
+        if is_digit(c) or is_letter(c):
+            return LET1
+        # TODO: get next state inputs should be valid
+        return LET2
+
+    elif state == DIG1:
+        if is_digit(c):
+            return DIG1
+        # TODO: same as letter (bad inputs should be checked)
+        elif is_letter(c):
+            raise InvalidNumber
+        return DIG2
+
+    elif state == EQ1:
+        if c == '=':
+            return EQEQ
+        return EQ2
+
+    elif state == CMT1:
 
 
 
