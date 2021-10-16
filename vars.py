@@ -25,10 +25,12 @@ Letters = [char for char in string.ascii_letters]
 Keywords = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 
 Accepting_States = [LET2, DIG2, BLANK, SYMBOL, EQ2, EQEQ, CMTMF, CMTSF, CMTEF]
-
+Valid_Inputs = Blanks + Symbols + Digits + Letters # TODO add EOF
+Star_States = [] # TODO
 
 class InvalidNumber(Exception):
     pass
+
 
 class InvalidInput(Exception):
     pass

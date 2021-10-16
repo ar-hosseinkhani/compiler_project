@@ -1,32 +1,25 @@
 from vars import *
 from utils import *
+from models import *
+
+tokens = []
+errors = []
+symbols = Keywords.copy()
+scanner_data = ScannerData()
 
 
 def get_next_token():
-    program = '''
-        void main ( void ) {
-        int a = 0;
-        // comment1
-        a = 2 + 2;
-        return;
-    }
-    '''
-
-    start = 0
-    forward = 0
-    line = 1
     state = START
+
     while True:
-        char = program[forward]
+        start, forward, line, program = scanner_data.start, scanner_data.forward, scanner_data.line, scanner_data.program
+        char = scanner_data.program[forward]
         if char == '\n':
             line += 1
-        state = get_next_state(state, char)
-        if state in Accepting_States:
-            token = create_token(state, program[start:forward + 1], line)
-            program = program[forward + 1:]
-            return token
-        else:
-            forward += 1
+        if char not in Valid_Inputs and state not in [CMT2, CMT3, CMT4]:
+            errors.append(Error('Invalid input', line, program[start:forward + 1]))
+            scanner_data.program = program[forward + 1:]
+            state = START
 
 
 def get_next_state(state, c):
