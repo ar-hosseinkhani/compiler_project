@@ -29,3 +29,6 @@ Accepting_States = [LET2, DIG2, BLANK, SYMBOL, EQ2, EQEQ, CMTMF, CMTSF, CMTEF]
 
 class InvalidNumber(Exception):
     pass
+
+class InvalidInput(Exception):
+    pass

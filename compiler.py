@@ -66,7 +66,30 @@ def get_next_state(state, c):
         return EQ2
 
     elif state == CMT1:
+        if c == '*':
+            return CMT2
+        elif c == '/':
+            return CMT4
+        raise InvalidInput()
 
+    elif state == CMT2:
+        if c == '*':
+            return CMT3
+        return CMT2
+
+    elif state == CMT3:
+        if c == '/':
+            return CMTMF
+        elif c == '*':
+            return CMT3
+        return CMT2
+
+    elif state == CMT4:
+        if c == '\n':
+            return CMTSF
+        elif is_eof(c):
+            return CMTEF
+        return CMT4
 
 
 def create_token(final_state, lexeme, line_number):

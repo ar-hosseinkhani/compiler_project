@@ -21,9 +21,6 @@ def is_blank(char):
     return char in Blanks
 
 
-def is_eol(char):
-    return char == '\n'
-
 
 def is_eof(char):
     pass
