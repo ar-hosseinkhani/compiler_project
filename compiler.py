@@ -1,24 +1,25 @@
-from vars import *
 from utils import *
 from models import *
-
-
+from vars import scanner_data as info
 
 
 def get_next_token():
     state = START
+    token = None
 
     while True:
-        start, forward, line, program = scanner_data.start, scanner_data.forward, scanner_data.line, scanner_data.program
-        char = scanner_data.program[forward]
+        if info.program:
+            char = info.program[info.forward]
+        else:
+            return None
 
         if char not in Valid_Inputs and state not in [CMT2, CMT3, CMT4]:
-            handle_error('Invalid input', line, program[start:forward + 1])
+            handle_error('Invalid input', info.line, info.program[info.start:info.forward + 1])
             state = START
             continue
-        elif char == '*' and scanner_data.program[forward + 1] == '/' and state not in [CMT2]:
-            forward += 1
-            handle_error('Unmatched comment', line, program[start:forward + 1])
+        elif char == '*' and scanner_data.program[info.forward + 1] == '/' and state not in [CMT2]:
+            info.forward += 1
+            handle_error('Unmatched comment', info.line, info.program[info.start:info.forward + 1])
             state = START
             continue
 
@@ -26,19 +27,29 @@ def get_next_token():
             state = get_next_state(state, char)
 
         except InvalidInput:
-            handle_error('Invalid input', line, program[start:forward + 1])
+            handle_error('Invalid input', info.line, info.program[info.start:info.forward + 1])
             state = START
         except InvalidNumber:
-            handle_error('Invalid number', line, program[start:forward + 1])
+            handle_error('Invalid number', info.line, info.program[info.start:info.forward + 1])
+            state = START
 
+        if is_star_state(state):
+            info.forward -= 1
         if is_final_state(state):
-            create_token(state, line, program[start:forward+1])
-            scanner_data.program = program[forward + 1:]
+            token = create_token(state, info.line, info.program[info.start:info.forward + 1])
+            scanner_data.program = info.program[info.forward + 1:]
             scanner_data.forward = 0
-            break
 
-        if char == '\n':
-            line += 1
+        if char == '\n' and not is_star_state(state):
+            info.line += 1
+
+        if token:
+            return token
+
+        if is_final_trash_state(state):
+            state = START
+            continue
+        info.forward += 1
 
 
 def get_next_state(state, c):
@@ -104,5 +115,9 @@ def get_next_state(state, c):
         return CMT4
 
 
-
-
+while True:
+    token = get_next_token()
+    if token:
+        print(token)
+    else:
+        break

@@ -26,8 +26,8 @@ Letters = [char for char in string.ascii_letters]
 Keywords = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 
 Final_States = [LET2, DIG2, BLANK, SYMBOL, EQ2, EQEQ, CMTMF, CMTSF, CMTEF]
-Valid_Inputs = Blanks + Symbols + Digits + Letters  # TODO add EOF
-Star_States = []  # TODO
+Valid_Inputs = Blanks + Symbols + Digits + Letters + ['/', '=']  # TODO add EOF
+Star_States = [LET2, DIG2, EQ2, CMTEF, CMTSF]  # TODO
 
 # IIE = 'Invalid input'
 # INE = 'Invalid number'

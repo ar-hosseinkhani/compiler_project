@@ -25,12 +25,35 @@ def is_final_state(state):
     return state in Final_States
 
 
+def is_star_state(state):
+    return state in Star_States
+
+
 def is_eof(char):
     pass
 
 
+def is_final_trash_state(final_state):
+    return final_state in [BLANK, CMTMF, CMTSF, CMTEF]
+
+
+def get_token_type(final_state, lexeme):
+    if final_state == LET2:
+        return 'KEYWORD' if is_keyword(lexeme) else 'ID'
+    elif final_state == DIG2:
+        return 'NUM'
+    elif final_state in [SYMBOL, EQ2, EQEQ]:
+        return 'SYMBOL'
+    raise NotImplementedError()
+
+
 def create_token(final_state, line_number, lexeme):
-    return True
+    if is_final_trash_state(final_state):
+        return None
+    token_type = get_token_type(final_state, lexeme)
+    token = Token(token_type, line_number, lexeme)
+    tokens.append(token)
+    return token
 
 
 def handle_error(error_type, line, lexeme):
