@@ -1,4 +1,5 @@
 import string
+from models import *
 
 START = 'start'
 LET1 = 'let1'
@@ -24,13 +25,16 @@ Digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 Letters = [char for char in string.ascii_letters]
 Keywords = ['if', 'else', 'void', 'int', 'repeat', 'break', 'until', 'return']
 
-Accepting_States = [LET2, DIG2, BLANK, SYMBOL, EQ2, EQEQ, CMTMF, CMTSF, CMTEF]
-Valid_Inputs = Blanks + Symbols + Digits + Letters # TODO add EOF
-Star_States = [] # TODO
+Final_States = [LET2, DIG2, BLANK, SYMBOL, EQ2, EQEQ, CMTMF, CMTSF, CMTEF]
+Valid_Inputs = Blanks + Symbols + Digits + Letters  # TODO add EOF
+Star_States = []  # TODO
 
-class InvalidNumber(Exception):
-    pass
+# IIE = 'Invalid input'
+# INE = 'Invalid number'
+# UMCE = 'Unmatched comment'
+# UCCE = 'Unclosed comment'
 
-
-class InvalidInput(Exception):
-    pass
+tokens = []
+errors = []
+symbols = Keywords.copy()
+scanner_data = ScannerData()

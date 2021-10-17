@@ -2,10 +2,7 @@ from vars import *
 from utils import *
 from models import *
 
-tokens = []
-errors = []
-symbols = Keywords.copy()
-scanner_data = ScannerData()
+
 
 
 def get_next_token():
@@ -14,12 +11,34 @@ def get_next_token():
     while True:
         start, forward, line, program = scanner_data.start, scanner_data.forward, scanner_data.line, scanner_data.program
         char = scanner_data.program[forward]
+
+        if char not in Valid_Inputs and state not in [CMT2, CMT3, CMT4]:
+            handle_error('Invalid input', line, program[start:forward + 1])
+            state = START
+            continue
+        elif char == '*' and scanner_data.program[forward + 1] == '/' and state not in [CMT2]:
+            forward += 1
+            handle_error('Unmatched comment', line, program[start:forward + 1])
+            state = START
+            continue
+
+        try:
+            state = get_next_state(state, char)
+
+        except InvalidInput:
+            handle_error('Invalid input', line, program[start:forward + 1])
+            state = START
+        except InvalidNumber:
+            handle_error('Invalid number', line, program[start:forward + 1])
+
+        if is_final_state(state):
+            create_token(state, line, program[start:forward+1])
+            scanner_data.program = program[forward + 1:]
+            scanner_data.forward = 0
+            break
+
         if char == '\n':
             line += 1
-        if char not in Valid_Inputs and state not in [CMT2, CMT3, CMT4]:
-            errors.append(Error('Invalid input', line, program[start:forward + 1]))
-            scanner_data.program = program[forward + 1:]
-            state = START
 
 
 def get_next_state(state, c):
@@ -50,7 +69,7 @@ def get_next_state(state, c):
             return DIG1
         # TODO: same as letter (bad inputs should be checked)
         elif is_letter(c):
-            raise InvalidNumber
+            raise InvalidNumber()
         return DIG2
 
     elif state == EQ1:
@@ -85,5 +104,5 @@ def get_next_state(state, c):
         return CMT4
 
 
-def create_token(final_state, lexeme, line_number):
-    return True
+
+

@@ -35,3 +35,13 @@ class ScannerData:
             }
             '''
         self.program = program
+
+
+class InvalidNumber(Exception):
+    pass
+
+
+class InvalidInput(Exception):
+    pass
+
+
