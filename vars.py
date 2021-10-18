@@ -36,5 +36,5 @@ Star_States = [LET2, DIG2, EQ2, CMTEF, CMTSF]  # TODO
 
 tokens = []
 errors = []
-symbols = Keywords.copy()
+symbol_table = Keywords.copy()
 scanner_data = ScannerData()

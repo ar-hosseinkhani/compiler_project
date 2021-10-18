@@ -7,11 +7,20 @@ def get_next_token():
     state = START
     token = None
 
+    mlc_start_line = 0
+
     while True:
-        if info.program:
-            char = info.program[info.forward]
-        else:
+        char = info.program[info.forward]
+        if is_eof(char):
+            if state in [CMT2, CMT3]:
+                lexeme = info.program[info.start:info.forward]
+                if len(lexeme) > 7:
+                    lexeme = lexeme[:7] + '...'
+                handle_error('Unclosed comment', mlc_start_line, lexeme)
             return None
+
+        if state == CMT2 and not mlc_start_line:
+            mlc_start_line = info.line
 
         if char not in Valid_Inputs and state not in [CMT2, CMT3, CMT4]:
             handle_error('Invalid input', info.line, info.program[info.start:info.forward + 1])
@@ -29,9 +38,11 @@ def get_next_token():
         except InvalidInput:
             handle_error('Invalid input', info.line, info.program[info.start:info.forward + 1])
             state = START
+            continue
         except InvalidNumber:
             handle_error('Invalid number', info.line, info.program[info.start:info.forward + 1])
             state = START
+            continue
 
         if is_star_state(state):
             info.forward -= 1
@@ -46,9 +57,13 @@ def get_next_token():
         if token:
             return token
 
+        if state == CMTMF:
+            mlc_start_line = 0
+
         if is_final_trash_state(state):
             state = START
             continue
+
         info.forward += 1
 
 
@@ -122,16 +137,40 @@ def make_tokens_file():
     while True:
         line_tokens = list(filter(lambda x: x.line == line, tokens))
         if line_tokens:
-            final += str(line - 1) + '.\t'
+            final += str(line) + '.\t'
         for token in line_tokens:
             final += str(token) + ' '
         if line == max_line:
             break
         if line_tokens:
             final += '\n'
-
         line += 1
-    print(final)
+    f = open('tokens.txt', 'w')
+    f.write(final + '\n')
+    f.close()
+
+
+def make_symbol_table_file():
+    final = ''
+    counter = 1
+    for item in symbol_table:
+        final += f'{counter}.\t{item}\n'
+        counter += 1
+    f = open('symbol_table.txt', 'w')
+    f.write(final)
+    f.close()
+
+
+def make_lexical_errors_file():
+    final = ''
+    if errors:
+        for error in errors:
+            final += str(error)
+    else:
+        final = 'There is no lexical error.'
+    f = open('lexical_errors.txt', 'w')
+    f.write(final)
+    f.close()
 
 
 while True:
@@ -141,6 +180,6 @@ while True:
         continue
     else:
         make_tokens_file()
-
+        make_symbol_table_file()
+        make_lexical_errors_file()
     break
-

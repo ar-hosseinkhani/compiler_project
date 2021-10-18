@@ -30,7 +30,7 @@ def is_star_state(state):
 
 
 def is_eof(char):
-    pass
+    return ord(char) == 5
 
 
 def is_final_trash_state(final_state):
@@ -52,6 +52,8 @@ def create_token(final_state, line_number, lexeme):
         return None
     token_type = get_token_type(final_state, lexeme)
     token = Token(token_type, line_number, lexeme)
+    if token.type == 'ID' and token.lexeme not in symbol_table:
+        symbol_table.append(token.lexeme)
     tokens.append(token)
     return token
 
