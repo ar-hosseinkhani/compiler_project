@@ -115,9 +115,32 @@ def get_next_state(state, c):
         return CMT4
 
 
+def make_tokens_file():
+    final = ''
+    line = 1
+    max_line = max(map(lambda x: x.line, tokens))
+    while True:
+        line_tokens = list(filter(lambda x: x.line == line, tokens))
+        if line_tokens:
+            final += str(line - 1) + '.\t'
+        for token in line_tokens:
+            final += str(token) + ' '
+        if line == max_line:
+            break
+        if line_tokens:
+            final += '\n'
+
+        line += 1
+    print(final)
+
+
 while True:
     token = get_next_token()
     if token:
-        print(token)
+        # print(token)
+        continue
     else:
-        break
+        make_tokens_file()
+
+    break
+
