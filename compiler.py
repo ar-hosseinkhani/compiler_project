@@ -82,9 +82,9 @@ def get_next_state(state, c):
         elif is_digit(c):
             return DIG1
         elif is_symbol(c):
-            # if info.program[info.forward + 1] not in Valid_Inputs or info.program[info.forward + 1] == '/':
-            #     info.forward += 1
-            #     raise InvalidInput
+            if c == '*' and (info.program[info.forward + 1] not in Valid_Inputs or info.program[info.forward + 1] == '/'):
+                info.forward += 1
+                raise InvalidInput
             # TODO test 9
             return SYMBOL
         elif c == '=':
@@ -192,16 +192,6 @@ def make_lexical_errors_file():
     f = open('lexical_errors.txt', 'w')
     f.write(final + '\n')
     f.close()
-
-    # final = ''
-    # if errors:
-    #     for error in errors:
-    #         final += str(error)
-    # else:
-    #     final = 'There is no lexical error.'
-    # f = open('lexical_errors.txt', 'w')
-    # f.write(final)
-    # f.close()
 
 
 while True:
