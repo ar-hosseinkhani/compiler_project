@@ -38,11 +38,11 @@ def is_final_trash_state(final_state):
 
 
 def get_token_type(final_state, lexeme):
-    if final_state == LET2:
+    if final_state in [LET1, LET2]:
         return 'KEYWORD' if is_keyword(lexeme) else 'ID'
-    elif final_state == DIG2:
+    elif final_state in [DIG1, DIG2]:
         return 'NUM'
-    elif final_state in [SYMBOL, EQ2, EQEQ]:
+    elif final_state in [SYMBOL, EQ1, EQ2, EQEQ]:
         return 'SYMBOL'
     raise NotImplementedError()
 

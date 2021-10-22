@@ -18,7 +18,7 @@ class Error:
     lexeme: str
 
     def __str__(self):
-        return f'{self.line}.\t({self.lexeme}, {self.type})\n'
+        return f'({self.lexeme}, {self.type})'
 
 
 @dataclass

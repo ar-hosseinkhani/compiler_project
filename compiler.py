@@ -17,6 +17,10 @@ def get_next_token():
                 if len(lexeme) > 7:
                     lexeme = lexeme[:7] + '...'
                 handle_error('Unclosed comment', mlc_start_line, lexeme)
+            elif state in [LET1, DIG1, EQ1]:
+                return create_token(state, info.line, info.program[info.start:info.forward])
+            elif state == CMT1:
+                handle_error('Invalid input', info.line, info.program[info.start:info.forward])
             return None
 
         if state == CMT2 and not mlc_start_line:
@@ -78,6 +82,10 @@ def get_next_state(state, c):
         elif is_digit(c):
             return DIG1
         elif is_symbol(c):
+            # if info.program[info.forward + 1] not in Valid_Inputs or info.program[info.forward + 1] == '/':
+            #     info.forward += 1
+            #     raise InvalidInput
+            # TODO test 9
             return SYMBOL
         elif c == '=':
             return EQ1
@@ -108,6 +116,7 @@ def get_next_state(state, c):
             return CMT2
         elif c == '/':
             return CMT4
+        info.forward -= 1
         raise InvalidInput()
 
     elif state == CMT2:
@@ -163,14 +172,36 @@ def make_symbol_table_file():
 
 def make_lexical_errors_file():
     final = ''
+    line = 1
     if errors:
-        for error in errors:
-            final += str(error)
+        max_line = max(map(lambda x: x.line, errors))
+        while True:
+            line_errors = list(filter(lambda x: x.line == line, errors))
+            if line_errors:
+                final += str(line) + '.\t'
+            for error in line_errors:
+                final += str(error) + ' '
+            if line == max_line:
+                break
+            if line_errors:
+                final += '\n'
+            line += 1
     else:
         final = 'There is no lexical error.'
+
     f = open('lexical_errors.txt', 'w')
-    f.write(final)
+    f.write(final + '\n')
     f.close()
+
+    # final = ''
+    # if errors:
+    #     for error in errors:
+    #         final += str(error)
+    # else:
+    #     final = 'There is no lexical error.'
+    # f = open('lexical_errors.txt', 'w')
+    # f.write(final)
+    # f.close()
 
 
 while True:
