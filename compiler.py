@@ -27,7 +27,10 @@ def get_next_token():
             mlc_start_line = info.line
 
         if char not in Valid_Inputs and state not in [CMT2, CMT3, CMT4]:
-            handle_error('Invalid input', info.line, info.program[info.start:info.forward + 1])
+            if state == DIG1:
+                handle_error('Invalid number', info.line, info.program[info.start:info.forward + 1])
+            else:
+                handle_error('Invalid input', info.line, info.program[info.start:info.forward + 1])
             state = START
             continue
         elif char == '*' and scanner_data.program[info.forward + 1] == '/' and state not in [CMT2]:
