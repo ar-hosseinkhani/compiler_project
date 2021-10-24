@@ -142,18 +142,19 @@ def get_next_state(state, c):
 def make_tokens_file():
     final = ''
     line = 1
-    max_line = max(map(lambda x: x.line, tokens))
-    while True:
-        line_tokens = list(filter(lambda x: x.line == line, tokens))
-        if line_tokens:
-            final += str(line) + '.\t'
-        for token in line_tokens:
-            final += str(token) + ' '
-        if line == max_line:
-            break
-        if line_tokens:
-            final += '\n'
-        line += 1
+    if tokens:
+        max_line = max(map(lambda x: x.line, tokens))
+        while True:
+            line_tokens = list(filter(lambda x: x.line == line, tokens))
+            if line_tokens:
+                final += str(line) + '.\t'
+            for token in line_tokens:
+                final += str(token) + ' '
+            if line == max_line:
+                break
+            if line_tokens:
+                final += '\n'
+            line += 1
     f = open('tokens.txt', 'w')
     f.write(final + '\n')
     f.close()
