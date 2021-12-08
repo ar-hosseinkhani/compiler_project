@@ -33,7 +33,9 @@ class ScannerData:
         self.line = 1
         # TODO: this should be read from file
         f = open('input.txt', 'r')
-        program = f.read() + chr(5)
+        # program = f.read() + chr(5)
+        program = f.read() + '$'
+
         self.program = program
 
 
