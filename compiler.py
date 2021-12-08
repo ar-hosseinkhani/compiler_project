@@ -33,7 +33,7 @@ def get_next_token():
                 handle_error('Invalid input', info.line, info.program[info.start:info.forward + 1])
             state = START
             continue
-        elif char == '*' and scanner_data.program[info.forward + 1] == '/' and state not in [CMT2]:
+        elif char == '*' and scanner_data.program[info.forward + 1] == '/' and state not in [CMT2, CMT4]:
             info.forward += 1
             handle_error('Unmatched comment', info.line, info.program[info.start:info.forward + 1])
             state = START
@@ -85,7 +85,8 @@ def get_next_state(state, c):
         elif is_digit(c):
             return DIG1
         elif is_symbol(c):
-            if c == '*' and (info.program[info.forward + 1] not in Valid_Inputs or info.program[info.forward + 1] == '/'):
+            if c == '*' and (
+                    info.program[info.forward + 1] not in Valid_Inputs or info.program[info.forward + 1] == '/'):
                 info.forward += 1
                 raise InvalidInput
             # TODO test 9
@@ -142,69 +143,10 @@ def get_next_state(state, c):
         return CMT4
 
 
-def make_tokens_file():
-    final = ''
-    line = 1
-    if tokens:
-        max_line = max(map(lambda x: x.line, tokens))
-        while True:
-            line_tokens = list(filter(lambda x: x.line == line, tokens))
-            if line_tokens:
-                final += str(line) + '.\t'
-            for token in line_tokens:
-                final += str(token) + ' '
-            if line == max_line:
-                break
-            if line_tokens:
-                final += '\n'
-            line += 1
-    f = open('tokens.txt', 'w')
-    f.write(final + '\n')
-    f.close()
-
-
-def make_symbol_table_file():
-    final = ''
-    counter = 1
-    for item in symbol_table:
-        final += f'{counter}.\t{item}\n'
-        counter += 1
-    f = open('symbol_table.txt', 'w')
-    f.write(final)
-    f.close()
-
-
-def make_lexical_errors_file():
-    final = ''
-    line = 1
-    if errors:
-        max_line = max(map(lambda x: x.line, errors))
-        while True:
-            line_errors = list(filter(lambda x: x.line == line, errors))
-            if line_errors:
-                final += str(line) + '.\t'
-            for error in line_errors:
-                final += str(error) + ' '
-            if line == max_line:
-                break
-            if line_errors:
-                final += '\n'
-            line += 1
-    else:
-        final = 'There is no lexical error.'
-
-    f = open('lexical_errors.txt', 'w')
-    f.write(final + '\n')
-    f.close()
-
-
 while True:
     token = get_next_token()
     if token:
         # print(token)
         continue
     else:
-        make_tokens_file()
-        make_symbol_table_file()
-        make_lexical_errors_file()
-    break
+        break
