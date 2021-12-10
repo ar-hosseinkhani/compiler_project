@@ -1,5 +1,5 @@
 import string
-from models import *
+from scanner_part.models import *
 
 START = 'start'
 LET1 = 'let1'

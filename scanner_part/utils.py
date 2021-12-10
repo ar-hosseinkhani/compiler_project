@@ -1,4 +1,4 @@
-from vars import *
+from scanner_part.vars import *
 
 
 def is_digit(char):
