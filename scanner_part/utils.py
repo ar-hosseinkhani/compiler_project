@@ -44,6 +44,8 @@ def get_token_type(final_state, lexeme):
         return 'NUM'
     elif final_state in [SYMBOL, EQ1, EQ2, EQEQ]:
         return 'SYMBOL'
+    elif lexeme == '$':
+        return '$'
     raise NotImplementedError()
 
 

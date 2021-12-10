@@ -1,5 +1,9 @@
-from scanner_part.scanner import get_next_token
-from first_follows import *
+from parser_vars import *
+from parser_vars import parser_data as data
 
 
-
+while (True):
+    data.set_next_token()
+    print(data.lookahead)
+    if data.lookahead.lexeme == '$':
+        break

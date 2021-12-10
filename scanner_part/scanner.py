@@ -1,6 +1,6 @@
-from utils import *
-from models import *
-from vars import scanner_data as info
+from scanner_part.utils import *
+from scanner_part.models import *
+from scanner_part.vars import scanner_data as info
 
 
 def get_next_token():
@@ -10,7 +10,13 @@ def get_next_token():
     mlc_start_line = 0
 
     while True:
-        char = info.program[info.forward]
+        if info.program:
+            char = info.program[info.forward]
+        else:
+            return
+        if char == '$':
+            info.program = ''
+            return create_token(state, info.line, '$')
         if is_eof(char):
             if state in [CMT2, CMT3]:
                 lexeme = info.program[info.start:info.forward]
@@ -143,10 +149,10 @@ def get_next_state(state, c):
         return CMT4
 
 
-while True:
-    token = get_next_token()
-    if token:
-        # print(token)
-        continue
-    else:
-        break
+# while True:
+#     token = get_next_token()
+#     if token:
+#         # print(token)
+#         continue
+#     else:
+#         break
