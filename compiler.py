@@ -24,16 +24,28 @@ while True:
     node = stack_list.pop()
     father_index = stack_list_father.pop()
     node_rules = productions.get(node)
-    tree_list.append(node)
-    tree_list_father.append(father_index)
-    index = len(tree_list) - 1
     look_ahead_lexeme = data.lookahead.lexeme
     if look_ahead_lexeme == '$':
         if node == '$':
+            tree_list.append(node)
+            tree_list_father.append(father_index)
             break
-        else:
+
+        found_eps = False
+        if node in non_terminals:
+            if look_ahead_lexeme in follows.get(node):
+                for product in node_rules:
+                    found_eps = True
+                    for lex in product:
+                        if 'epsilon' not in firsts.get(lex):
+                            found_eps = False
+                            break
+        elif node == 'epsilon':
+                found_eps = True
+        if not found_eps:
+            print("unexpected EOF in line " + str(data.lookahead.line))
             # Error
-            pass
+            break
     if data.lookahead.type in ["NUM", "ID"]:
         look_ahead_lexeme = data.lookahead.type
     if node in non_terminals:
@@ -42,6 +54,9 @@ while True:
             for i in product:
                 if look_ahead_lexeme in firsts.get(i):
                     valid = True
+                    tree_list.append(node)
+                    tree_list_father.append(father_index)
+                    index = len(tree_list) - 1
                     for pr in product[::-1]:
                         stack_list.append(pr)
                         stack_list_father.append(index)
@@ -60,16 +75,19 @@ while True:
                             found_eps = False
                             break
                     if found_eps:
+                        tree_list.append(node)
+                        tree_list_father.append(father_index)
+                        index = len(tree_list) - 1
                         for i in product[::-1]:
                             stack_list.append(i)
                             stack_list_father.append(index)
                         break
 
                 if not found_eps:
+                    print("missing" + node + "in line" + str(data.lookahead.line))
                     # missing node in line of lexeme
-                    pass
-                pass
             else:
+                print("illegal " + look_ahead_lexeme + " in line" + str(data.lookahead.line))
                 # illegal lexeme in line of lexeme
                 data.set_next_token()
                 stack_list.append(node)
@@ -77,14 +95,20 @@ while True:
 
     else:
         if node == 'epsilon':
-            pass
+            tree_list.append(node)
+            tree_list_father.append(father_index)
+            index = len(tree_list) - 1
         elif look_ahead_lexeme == node:
+            tree_list.append(node)
+            tree_list_father.append(father_index)
+            index = len(tree_list) - 1
             tree_list[index] = '(' + data.lookahead.type + ', ' + data.lookahead.lexeme + ')'
             data.set_next_token()
         else:
             # missing node in line
+            print("missing " + node + " in line" + str(data.lookahead.line))
             tree_list[index] = '(' + data.lookahead.type + ', ' + data.lookahead.lexeme + ')'
-            # data.set_next_token()
+            # nabayad bashe. data.set_next_token()
 
 for pre, _, node in RenderTree(create_tree()):
     print("%s%s" % (pre, node.name))
