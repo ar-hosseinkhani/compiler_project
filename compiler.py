@@ -24,7 +24,6 @@ def make_parse_file():
     final = ''
     for pre, _, node in RenderTree(create_tree()):
         final += str("%s%s" % (pre, node.name)) + '\n'
-    print(final)
     f = open('parse_tree.txt', 'w')
     f.write(final)
     f.close()
@@ -63,8 +62,8 @@ while True:
         elif node == 'epsilon':
                 found_eps = True
         if not found_eps:
-            print("unexpected EOF in line " + str(data.lookahead.line))
-            # Error
+            errors.append("#" + str(data.lookahead.line) + " : syntax error, Unexpected EOF")
+            # print("unexpected EOF in line " + str(data.lookahead.line))
             break
     if data.lookahead.type in ["NUM", "ID"]:
         look_ahead_lexeme = data.lookahead.type
@@ -104,11 +103,12 @@ while True:
                         break
 
                 if not found_eps:
-                    print("missing" + node + "in line" + str(data.lookahead.line))
+                    errors.append("#" + str(data.lookahead.line) + " : syntax error, missing " + node)
+                    # print("missing" + node + "in line" + str(data.lookahead.line))
                     # missing node in line of lexeme
             else:
-                print("illegal " + look_ahead_lexeme + " in line" + str(data.lookahead.line))
-                # illegal lexeme in line of lexeme
+                errors.append("#" + str(data.lookahead.line) + " : syntax error, illegal " + look_ahead_lexeme)
+                #print("illegal " + look_ahead_lexeme + " in line" + str(data.lookahead.line))
                 data.set_next_token()
                 stack_list.append(node)
                 stack_list_father.append(father_index)
@@ -125,10 +125,9 @@ while True:
             tree_list[index] = '(' + data.lookahead.type + ', ' + data.lookahead.lexeme + ')'
             data.set_next_token()
         else:
-            # missing node in line
-            print("missing " + node + " in line" + str(data.lookahead.line))
+            errors.append("#" + str(data.lookahead.line) + " : syntax error, missing " + node)
+            #print("missing " + node + " in line" + str(data.lookahead.line))
             tree_list[index] = '(' + data.lookahead.type + ', ' + data.lookahead.lexeme + ')'
-            # nabayad bashe. data.set_next_token()
 
 make_error_file()
 make_parse_file()
