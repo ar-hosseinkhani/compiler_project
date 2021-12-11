@@ -26,6 +26,7 @@ def make_parse_file():
     for pre, fill, node in RenderTree(create_tree()):
         final += "%s%s" % (pre, node.name) + '\n'
     f = open('parse_tree.txt', 'w+')
+    #print(final)
     f.write(final)
     f.close()
 
@@ -106,7 +107,7 @@ while True:
 
                 if not found_eps:
                     errors.append("#" + str(data.lookahead.line) + " : syntax error, missing " + node)
-                    # missing node in line of lexeme
+                    # missing non terminal in line of lexeme
             else:
                 errors.append("#" + str(data.lookahead.line) + " : syntax error, illegal " + look_ahead_lexeme)
                 data.set_next_token()
@@ -126,7 +127,10 @@ while True:
             data.set_next_token()
         else:
             errors.append("#" + str(data.lookahead.line) + " : syntax error, missing " + node)
-            tree_list[index] = '(' + data.lookahead.type + ', ' + data.lookahead.lexeme + ')'
+            # tree_list.append(node)
+            # tree_list_father.append(father_index)
+            # index = len(tree_list) - 1
+            # tree_list[index] = '(' + data.lookahead.type + ', ' + data.lookahead.lexeme + ')'
 
 make_error_file()
 make_parse_file()
