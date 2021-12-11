@@ -23,9 +23,9 @@ def create_tree():
 
 def make_parse_file():
     final = ''
-    for pre, _, node in RenderTree(create_tree()):
-        final += str("%s%s" % (pre, node.name)) + '\n'
-    f = open('parse_tree.txt', 'w', encoding="utf-8")
+    for pre, fill, node in RenderTree(create_tree()):
+        final += "%s%s" % (pre, node.name) + '\n'
+    f = open('parse_tree.txt', 'w+')
     f.write(final)
     f.close()
 
@@ -66,7 +66,6 @@ while True:
             found_eps = True
         if not found_eps:
             errors.append("#" + str(data.lookahead.line) + " : syntax error, Unexpected EOF")
-            # print("unexpected EOF in line " + str(data.lookahead.line))
             break
     if data.lookahead.type in ["NUM", "ID"]:
         look_ahead_lexeme = data.lookahead.type
@@ -107,11 +106,9 @@ while True:
 
                 if not found_eps:
                     errors.append("#" + str(data.lookahead.line) + " : syntax error, missing " + node)
-                    # print("missing" + node + "in line" + str(data.lookahead.line))
                     # missing node in line of lexeme
             else:
                 errors.append("#" + str(data.lookahead.line) + " : syntax error, illegal " + look_ahead_lexeme)
-                # print("illegal " + look_ahead_lexeme + " in line" + str(data.lookahead.line))
                 data.set_next_token()
                 stack_list.append(node)
                 stack_list_father.append(father_index)
@@ -129,7 +126,6 @@ while True:
             data.set_next_token()
         else:
             errors.append("#" + str(data.lookahead.line) + " : syntax error, missing " + node)
-            # print("missing " + node + " in line" + str(data.lookahead.line))
             tree_list[index] = '(' + data.lookahead.type + ', ' + data.lookahead.lexeme + ')'
 
 make_error_file()
