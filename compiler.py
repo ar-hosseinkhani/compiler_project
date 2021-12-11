@@ -3,6 +3,7 @@ from parser_vars import parser_data as data
 from rules import *
 from anytree import Node, RenderTree
 
+errors = []
 tree_list = []
 tree_list_father = []
 stack_list = []
@@ -19,6 +20,25 @@ def create_tree():
         tree.append(Node(tree_list[iteration], parent=tree[int(tree_list_father[iteration])]))
     return tree[0]
 
+def make_parse_file():
+    final = ''
+    for pre, _, node in RenderTree(create_tree()):
+        final += str("%s%s" % (pre, node.name)) + '\n'
+    print(final)
+    f = open('parse_tree.txt', 'w')
+    f.write(final)
+    f.close()
+
+def make_error_file():
+    final = ''
+    if errors:
+        for er in errors:
+            final += er + '\n'
+    else:
+        final = 'There is no syntax error.'
+    f = open('syntax_errors.txt', 'w')
+    f.write(final)
+    f.close()
 
 while True:
     node = stack_list.pop()
@@ -110,5 +130,5 @@ while True:
             tree_list[index] = '(' + data.lookahead.type + ', ' + data.lookahead.lexeme + ')'
             # nabayad bashe. data.set_next_token()
 
-for pre, _, node in RenderTree(create_tree()):
-    print("%s%s" % (pre, node.name))
+make_error_file()
+make_parse_file()
