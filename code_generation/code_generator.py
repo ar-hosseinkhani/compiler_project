@@ -86,8 +86,8 @@ def code_gen(action_symbol):
         ss.pop()
         ss.pop()
     elif action_symbol == "#add_array":
-        tl = len(ss)
         no_args = int(ss.pop())
+        tl = len(ss)
         array_address = get_space_for_array(no_args)
         address = get_temp()
         pb.append(ProgramLine('ASSIGN', f'#{array_address}', address, ''))
