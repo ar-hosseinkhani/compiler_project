@@ -115,9 +115,13 @@ def code_gen(action_symbol):
         s.no_args = np.index
     elif action_symbol == "#set_fun_pointer":
         s = get_symbol(cs.scope_name, "0")
-        pb.append(ProgramLine("ASSIGN", f'#{len(pb)}', s.address, ''))
+        ln = len(pb)
         if cs.scope_name == 'main':
-            pb[0] = ProgramLine("JP", f'{len(pb)}', '', '')
+            pb.append(ProgramLine("ASSIGN", f'#{ln+1}', s.address, ''))
+        else:
+            pb.append(ProgramLine("ASSIGN", f'#{ln+2}', s.address, ''))
+            ss.append(ln+1)
+            pb.append('?')
     elif action_symbol == "#pop":
         ss.pop()
     elif action_symbol == '#return_jp':
@@ -161,7 +165,7 @@ def code_gen(action_symbol):
         pb.append(ProgramLine('ADD', f'#{ss[lt - 1]}', "#8", temp1))
         ln = len(pb)
         pb.append(ProgramLine('ASSIGN', f'#{ln + 2}', f'@{temp1}', ''))
-        pb.append(ProgramLine('JP', f'@{ss[lt-1]}', '', ''))   # nemidoonam adresdehi doroste ya na???!!!
+        pb.append(ProgramLine('JP', f'@{ss[lt-1]}', '', ''))                 #nemidoonam adresdehi doroste ya na???!!!
         temp2 = get_temp()
         pb.append(ProgramLine('ADD', f'#{ss[lt - 1]}', "#4", temp2))
         temp3 = get_temp()
@@ -169,16 +173,19 @@ def code_gen(action_symbol):
         ss.pop()
         ss.append(temp3)
     elif action_symbol == '#init':
-        pb.append('?')
         address = get_temp()
         symbols.append(Symbol("output", address, "fun", 1, "void", "0"))
         pb.append(ProgramLine("ASSIGN", '#2', address, ''))
+        pb.append(ProgramLine('JP', '#4', '', ''))
         pb.append(ProgramLine('PRINT', str(address+12), '', ''))
         pb.append(ProgramLine('JP', f'@{address+8}', '', ''))
         get_temp()
         get_temp()
         get_temp()
     elif action_symbol == '#reset_scope':
+        if cs.scope_name != 'main':
+            ln = len(pb)
+            pb[int(ss.pop())] = ProgramLine('JP', str(ln), '', '')
         cs.scope_name = "0"
     else:
         print('ERROR!', action_symbol)
