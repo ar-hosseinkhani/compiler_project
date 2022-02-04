@@ -50,6 +50,7 @@ def code_gen(action_symbol):
         pb.append(ProgramLine(ss[tl - 2], ss[tl - 3], ss[tl - 1], temp))  # خودمون به صورت درست وارد استک میکنیم
         ss.pop()
         ss.pop()
+        ss.pop()
         ss.append(temp)
     elif action_symbol.startswith('#push_'):
         ss.append(action_symbol[6:])
@@ -77,7 +78,7 @@ def code_gen(action_symbol):
         ss.pop()
         ss.pop()
     elif action_symbol == "#gp_id":
-        ss.append(tree_list[len(tree_list)-1])
+        ss.append(tree_list[len(tree_list)-1][tree_list[len(tree_list)-1].index(',') + 2: len(tree_list[len(tree_list)-1]) - 1])
     elif action_symbol == "#add_id":
         tl = len(ss)
         symbols.append(Symbol(ss[tl-1], int(get_temp()), "var", 0, ss[tl-2], cs.scope_name))
@@ -127,9 +128,9 @@ def code_gen(action_symbol):
         pb.append(ProgramLine('ASSIGN', ss.pop(), str(s.address + 4), ''))
         pb.append(ProgramLine('JP', f'@{(s.address + 8)}', '', ''))
     elif action_symbol == "#get_id":
-        s = get_symbol(tree_list[len(tree_list)-1], cs.scope_name)
+        s = get_symbol(tree_list[len(tree_list)-1][tree_list[len(tree_list)-1].index(',') + 2: len(tree_list[len(tree_list)-1]) - 1], cs.scope_name)
         if s == 'none':
-            s = get_symbol(tree_list[len(tree_list)-1], "0")
+            s = get_symbol(tree_list[len(tree_list)-1][tree_list[len(tree_list)-1].index(',') + 2: len(tree_list[len(tree_list)-1]) - 1], "0")
         ss.append(str(s.address))
     elif action_symbol == '#get_array_item':
         temp1 = get_temp()
@@ -140,7 +141,8 @@ def code_gen(action_symbol):
         pb.append(ProgramLine('ASSIGN', f'@{temp2}', temp3, ''))
         ss.append(temp3)
     elif action_symbol == '#get_num':
-        ss.append(f'(#{tree_list[len(tree_list) - 1]})')
+        alt = tree_list[len(tree_list) - 1][tree_list[len(tree_list)-1].index(',') + 2: len(tree_list[len(tree_list)-1]) - 1]
+        ss.append(f'#{alt}')
     elif action_symbol == '#reset_no':
         np.index = 0
     elif action_symbol == "#add_arg":
@@ -169,13 +171,15 @@ def code_gen(action_symbol):
     elif action_symbol == '#init':
         pb.append('?')
         address = get_temp()
-        symbols.append(Symbol("(ID, output)", address, "fun", 1, "void", "0"))
+        symbols.append(Symbol("output", address, "fun", 1, "void", "0"))
         pb.append(ProgramLine("ASSIGN", '#2', address, ''))
         pb.append(ProgramLine('PRINT', str(address+12), '', ''))
         pb.append(ProgramLine('JP', f'@{address+8}', '', ''))
         get_temp()
         get_temp()
         get_temp()
+    elif action_symbol == '#reset_scope':
+        cs.scope_name = "0"
     else:
         print('ERROR!', action_symbol)
 
