@@ -165,5 +165,14 @@ def code_gen(action_symbol):
         pb.append(ProgramLine("ASSIGN", f'@{temp2}', temp3, ''))
         ss.pop()
         ss.append(temp3)
-    elif action_symbol == '#jp_to_main':
+    elif action_symbol == '#init':
         pb.append('?')
+        address = get_temp()
+        symbols.append(Symbol("output", address, "fun", 1, "void", "0"))
+        pb.append(ProgramLine("ASSIGN", '#2', address, ''))
+        pb.append(ProgramLine('PRINT', str(address+12), '', ''))
+        pb.append(ProgramLine('JP', f'@{address+8}', '', ''))
+        get_temp()
+        get_temp()
+        get_temp()
+
