@@ -2,9 +2,10 @@ from code_generation.models import ProgramLine
 from code_generation.models import Symbol
 from code_generation.models import temps as t
 from code_generation.models import arrays as a
-from compiler import tree_list
 from code_generation.models import current_scope as cs
 from code_generation.models import no_params as np
+
+tree_list = []
 
 pb = []
 ss = []
@@ -168,7 +169,7 @@ def code_gen(action_symbol):
     elif action_symbol == '#init':
         pb.append('?')
         address = get_temp()
-        symbols.append(Symbol("output", address, "fun", 1, "void", "0"))
+        symbols.append(Symbol("(ID, output)", address, "fun", 1, "void", "0"))
         pb.append(ProgramLine("ASSIGN", '#2', address, ''))
         pb.append(ProgramLine('PRINT', str(address+12), '', ''))
         pb.append(ProgramLine('JP', f'@{address+8}', '', ''))
@@ -177,3 +178,5 @@ def code_gen(action_symbol):
         get_temp()
     else:
         print('ERROR!', action_symbol)
+
+

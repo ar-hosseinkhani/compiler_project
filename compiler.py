@@ -2,9 +2,10 @@ from parser_vars import *
 from parser_vars import parser_data as data
 from rules import *
 from anytree import Node, RenderTree
+from code_generation.code_generator import code_gen, tree_list, pb
+
 
 errors = []
-tree_list = []
 tree_list_father = []
 stack_list = []
 stack_list_father = []
@@ -26,7 +27,7 @@ def make_parse_file():
     for pre, fill, node in RenderTree(create_tree()):
         final += "%s%s" % (pre, node.name) + '\n'
     f = open('parse_tree.txt', 'w+')
-    #print(final)
+    # print(final)
     f.write(final)
     f.close()
 
@@ -43,8 +44,22 @@ def make_error_file():
     f.close()
 
 
+def print_program_block(pb: list):
+    i = 0
+    f = open('output.txt', 'w')
+    for item in pb:
+        print(f'{i}\t{item}')
+        f.write(f'{i}\t{item}\n')
+        i += 1
+    f.close()
+
+
 while True:
     node = stack_list.pop()
+    if node.startswith('#'):
+
+        code_gen(node)
+        continue
     father_index = stack_list_father.pop()
     node_rules = productions.get(node)
     look_ahead_lexeme = data.lookahead.lexeme
@@ -60,6 +75,8 @@ while True:
                 for product in node_rules:
                     found_eps = True
                     for lex in product:
+                        if lex.startswith('#'):
+                            continue
                         if 'epsilon' not in firsts.get(lex):
                             found_eps = False
                             break
@@ -74,6 +91,8 @@ while True:
         valid = False
         for product in node_rules:
             for i in product:
+                if i.startswith('#'):
+                    continue
                 if look_ahead_lexeme in firsts.get(i):
                     valid = True
                     tree_list.append(node)
@@ -93,6 +112,8 @@ while True:
                 for product in node_rules:
                     found_eps = True
                     for lex in product:
+                        if lex.startswith('#'):
+                            continue
                         if 'epsilon' not in firsts.get(lex):
                             found_eps = False
                             break
@@ -132,5 +153,6 @@ while True:
             # index = len(tree_list) - 1
             # tree_list[index] = '(' + data.lookahead.type + ', ' + data.lookahead.lexeme + ')'
 
-make_error_file()
-make_parse_file()
+# make_error_file()
+# make_parse_file()
+print_program_block(pb)
