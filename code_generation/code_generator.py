@@ -74,7 +74,8 @@ def code_gen(action_symbol):
     elif action_symbol == '#jpf_repeat':
         tl = len(ss)
         pb.append(ProgramLine('JPF', ss[tl - 1], str(int(ss[tl - 2]) + 1), ''))
-        pb[int(ss[tl - 2])] = ProgramLine('JP', str(len(pb)), '', '')
+        ln = len(pb)
+        pb[int(ss[tl - 2])] = ProgramLine('JP', str(ln), '', '')
         ss.pop()
         ss.pop()
     elif action_symbol == "#gp_id":
@@ -148,9 +149,7 @@ def code_gen(action_symbol):
         pb.append(ProgramLine('MULT', "#4", ss.pop(), temp1))
         temp2 = get_temp()
         pb.append(ProgramLine('ADD', temp1, ss.pop(), temp2))
-        temp3 = get_temp()
-        pb.append(ProgramLine('ASSIGN', f'@{temp2}', temp3, ''))
-        ss.append(temp3)
+        ss.append(f'@{temp2}')
     elif action_symbol == '#get_num':
         alt = tree_list[len(tree_list) - 1][
               tree_list[len(tree_list) - 1].index(',') + 2: len(tree_list[len(tree_list) - 1]) - 1]
