@@ -30,9 +30,10 @@ class Symbol:
 @dataclass
 class Scope:
     scope_name: str
+    has_set_fun_pointer: bool
 
 
-current_scope = Scope("0")
+current_scope = Scope("0", False)
 temps = TemporaryIndex(1000)
 arrays = TemporaryIndex(2000)
 no_params = TemporaryIndex(0)

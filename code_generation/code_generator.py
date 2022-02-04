@@ -59,11 +59,11 @@ def code_gen(action_symbol):
         pb.append('?')
     elif action_symbol == '#save_r':
         ln = len(pb)
-        pb.append(ProgramLine('JP', str(ln+2), '', ''))
-        ss.append(ln+1)
+        pb.append(ProgramLine('JP', str(ln + 2), '', ''))
+        ss.append(ln + 1)
         pb.append('?')
     elif action_symbol == '#set_break':
-        pb.append(ProgramLine('JP', ss[len(ss)-1], '', ''))
+        pb.append(ProgramLine('JP', ss[len(ss) - 1], '', ''))
     elif action_symbol == '#jp':
         pb[int(ss.pop())] = ProgramLine('JP', str(len(pb)), '', '')
     elif action_symbol == '#jpf_if':
@@ -73,15 +73,16 @@ def code_gen(action_symbol):
         pb.append('?')
     elif action_symbol == '#jpf_repeat':
         tl = len(ss)
-        pb.append(ProgramLine('JPF', ss[tl-1], str(int(ss[tl - 2]) + 1), ''))
-        pb[int(ss[tl-2])] = ProgramLine('JP', str(len(pb)), '', '')
+        pb.append(ProgramLine('JPF', ss[tl - 1], str(int(ss[tl - 2]) + 1), ''))
+        pb[int(ss[tl - 2])] = ProgramLine('JP', str(len(pb)), '', '')
         ss.pop()
         ss.pop()
     elif action_symbol == "#gp_id":
-        ss.append(tree_list[len(tree_list)-1][tree_list[len(tree_list)-1].index(',') + 2: len(tree_list[len(tree_list)-1]) - 1])
+        ss.append(tree_list[len(tree_list) - 1][
+                  tree_list[len(tree_list) - 1].index(',') + 2: len(tree_list[len(tree_list) - 1]) - 1])
     elif action_symbol == "#add_id":
         tl = len(ss)
-        symbols.append(Symbol(ss[tl-1], int(get_temp()), "var", 0, ss[tl-2], cs.scope_name))
+        symbols.append(Symbol(ss[tl - 1], int(get_temp()), "var", 0, ss[tl - 2], cs.scope_name))
         ss.pop()
         ss.pop()
     elif action_symbol == "#add_array":
@@ -90,14 +91,15 @@ def code_gen(action_symbol):
         array_address = get_space_for_array(no_args)
         address = get_temp()
         pb.append(ProgramLine('ASSIGN', f'#{array_address}', address, ''))
-        symbols.append(Symbol(ss[tl-1], int(address), "array", no_args, ss[tl-2], cs.scope_name))
+        symbols.append(Symbol(ss[tl - 1], int(address), "array", no_args, ss[tl - 2], cs.scope_name))
         ss.pop()
         ss.pop()
     elif action_symbol == "#add_fun":
         tl = len(ss)
         address = get_temp()
         symbols.append(Symbol(ss[tl - 1], int(address), "fun", 0, ss[tl - 2], cs.scope_name))
-        cs.scope_name = ss[tl-1]
+        cs.scope_name = ss[tl - 1]
+        cs.has_set_fun_pointer = False
         np.index = 0
         get_temp()
         get_temp()
@@ -114,14 +116,16 @@ def code_gen(action_symbol):
         s = get_symbol(cs.scope_name, "0")
         s.no_args = np.index
     elif action_symbol == "#set_fun_pointer":
-        s = get_symbol(cs.scope_name, "0")
-        ln = len(pb)
-        if cs.scope_name == 'main':
-            pb.append(ProgramLine("ASSIGN", f'#{ln+1}', s.address, ''))
-        else:
-            pb.append(ProgramLine("ASSIGN", f'#{ln+2}', s.address, ''))
-            ss.append(ln+1)
-            pb.append('?')
+        if not cs.has_set_fun_pointer:
+            cs.has_set_fun_pointer = True
+            s = get_symbol(cs.scope_name, "0")
+            ln = len(pb)
+            if cs.scope_name == 'main':
+                pb.append(ProgramLine("ASSIGN", f'#{ln + 1}', s.address, ''))
+            else:
+                pb.append(ProgramLine("ASSIGN", f'#{ln + 2}', s.address, ''))
+                ss.append(ln + 1)
+                pb.append('?')
     elif action_symbol == "#pop":
         ss.pop()
     elif action_symbol == '#return_jp':
@@ -132,9 +136,12 @@ def code_gen(action_symbol):
         pb.append(ProgramLine('ASSIGN', ss.pop(), str(s.address + 4), ''))
         pb.append(ProgramLine('JP', f'@{(s.address + 8)}', '', ''))
     elif action_symbol == "#get_id":
-        s = get_symbol(tree_list[len(tree_list)-1][tree_list[len(tree_list)-1].index(',') + 2: len(tree_list[len(tree_list)-1]) - 1], cs.scope_name)
+        s = get_symbol(tree_list[len(tree_list) - 1][
+                       tree_list[len(tree_list) - 1].index(',') + 2: len(tree_list[len(tree_list) - 1]) - 1],
+                       cs.scope_name)
         if s == 'none':
-            s = get_symbol(tree_list[len(tree_list)-1][tree_list[len(tree_list)-1].index(',') + 2: len(tree_list[len(tree_list)-1]) - 1], "0")
+            s = get_symbol(tree_list[len(tree_list) - 1][
+                           tree_list[len(tree_list) - 1].index(',') + 2: len(tree_list[len(tree_list) - 1]) - 1], "0")
         ss.append(str(s.address))
     elif action_symbol == '#get_array_item':
         temp1 = get_temp()
@@ -145,7 +152,8 @@ def code_gen(action_symbol):
         pb.append(ProgramLine('ASSIGN', f'@{temp2}', temp3, ''))
         ss.append(temp3)
     elif action_symbol == '#get_num':
-        alt = tree_list[len(tree_list) - 1][tree_list[len(tree_list)-1].index(',') + 2: len(tree_list[len(tree_list)-1]) - 1]
+        alt = tree_list[len(tree_list) - 1][
+              tree_list[len(tree_list) - 1].index(',') + 2: len(tree_list[len(tree_list) - 1]) - 1]
         ss.append(f'#{alt}')
     elif action_symbol == '#reset_no':
         np.index = 0
@@ -154,10 +162,10 @@ def code_gen(action_symbol):
         pb.append(ProgramLine('MULT', "#4", f'#{np.index}', temp1))
         temp2 = get_temp()
         lt = len(ss)
-        pb.append(ProgramLine('ADD', f'#{ss[lt-2]}', "#12", temp2))
+        pb.append(ProgramLine('ADD', f'#{ss[lt - 2]}', "#12", temp2))
         temp3 = get_temp()
         pb.append(ProgramLine('ADD', temp1, temp2, temp3))
-        pb.append(ProgramLine('ASSIGN', ss[lt-1], f'@{temp3}', ''))
+        pb.append(ProgramLine('ASSIGN', ss[lt - 1], f'@{temp3}', ''))
         ss.pop()
     elif action_symbol == "#call_fun":
         temp1 = get_temp()
@@ -165,7 +173,7 @@ def code_gen(action_symbol):
         pb.append(ProgramLine('ADD', f'#{ss[lt - 1]}', "#8", temp1))
         ln = len(pb)
         pb.append(ProgramLine('ASSIGN', f'#{ln + 2}', f'@{temp1}', ''))
-        pb.append(ProgramLine('JP', f'@{ss[lt-1]}', '', ''))                 #nemidoonam adresdehi doroste ya na???!!!
+        pb.append(ProgramLine('JP', f'@{ss[lt - 1]}', '', ''))  # nemidoonam adresdehi doroste ya na???!!!
         temp2 = get_temp()
         pb.append(ProgramLine('ADD', f'#{ss[lt - 1]}', "#4", temp2))
         temp3 = get_temp()
@@ -177,8 +185,8 @@ def code_gen(action_symbol):
         symbols.append(Symbol("output", address, "fun", 1, "void", "0"))
         pb.append(ProgramLine("ASSIGN", '#3', address, ''))
         pb.append(ProgramLine('JP', '#5', '', ''))
-        pb.append(ProgramLine('PRINT', str(address+12), '', ''))
-        pb.append(ProgramLine('JP', f'@{address+8}', '', ''))
+        pb.append(ProgramLine('PRINT', str(address + 12), '', ''))
+        pb.append(ProgramLine('JP', f'@{address + 8}', '', ''))
         get_temp()
         get_temp()
         get_temp()
@@ -187,7 +195,6 @@ def code_gen(action_symbol):
             ln = len(pb)
             pb[int(ss.pop())] = ProgramLine('JP', str(ln), '', '')
         cs.scope_name = "0"
+        cs.has_set_fun_pointer = False
     else:
         print('ERROR!', action_symbol)
-
-
