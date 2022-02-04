@@ -175,8 +175,8 @@ def code_gen(action_symbol):
     elif action_symbol == '#init':
         address = get_temp()
         symbols.append(Symbol("output", address, "fun", 1, "void", "0"))
-        pb.append(ProgramLine("ASSIGN", '#2', address, ''))
-        pb.append(ProgramLine('JP', '#4', '', ''))
+        pb.append(ProgramLine("ASSIGN", '#3', address, ''))
+        pb.append(ProgramLine('JP', '#5', '', ''))
         pb.append(ProgramLine('PRINT', str(address+12), '', ''))
         pb.append(ProgramLine('JP', f'@{address+8}', '', ''))
         get_temp()
