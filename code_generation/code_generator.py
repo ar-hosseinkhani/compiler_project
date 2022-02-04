@@ -1,8 +1,12 @@
 from code_generation.models import ProgramLine
+from code_generation.models import Symbol
 from code_generation.models import temps as t
+from code_generation.models import arrays as a
+from compiler import tree_list
 
 pb = []
 ss = []
+symbols = []
 
 
 def get_temp():
@@ -12,6 +16,16 @@ def get_temp():
     t.temp_index += 4
     ss.pop()
     return str(t.temp_index - 4)
+
+
+def get_space_for_array(num: int):
+    for i in range(num):
+        ss.append(a.temp_index)
+        ss.append('#0')
+        code_gen('#assign')
+        a.temp_index += 4
+        ss.pop()
+    return str(a.temp_index - 4*num)
 
 
 def code_gen(action_symbol):
@@ -28,7 +42,7 @@ def code_gen(action_symbol):
         ss.pop()
         ss.append(temp)
     elif action_symbol.startswith('#push_'):
-        ss.append(action_symbol[6:].upper())
+        ss.append(action_symbol[6:])
 
     elif action_symbol == '#save':
         ss.append(len(pb))
@@ -44,3 +58,5 @@ def code_gen(action_symbol):
     elif action_symbol == '#jpf_repeat':
         temp = ss.pop()
         pb[int(ss.pop())] = ProgramLine('JPF', temp, str(len(pb)), '')
+    elif action_symbol == "#gp_id":
+        ss.append(tree_list[len(tree_list)-1])

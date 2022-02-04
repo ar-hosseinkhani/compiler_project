@@ -17,4 +17,15 @@ class TemporaryIndex:
     temp_index: int
 
 
+@dataclass
+class Symbol:
+    lexeme: str
+    address: int
+    type: str
+    no_args: int
+    data_type: str
+    scope: str
+
+
 temps = TemporaryIndex(1000)
+arrays = TemporaryIndex(2000)
