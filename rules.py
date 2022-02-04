@@ -1,5 +1,5 @@
 productions = {
-    "Program": [["Declaration-list", "$"]],
+    "Program": [["#jp_to_main", "Declaration-list", "$"]],
     "Declaration-list": [["Declaration", "Declaration-list"], ["epsilon"]],
     "Declaration": [["Declaration-initial", "Declaration-prime"]],
     "Declaration-initial": [["Type-specifier", "ID", "#gp_id"]],
