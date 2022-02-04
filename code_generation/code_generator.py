@@ -17,7 +17,7 @@ def get_temp():
     code_gen('#assign')
     t.index += 4
     ss.pop()
-    return str(t.index - 4)
+    return t.index - 4
 
 
 def get_space_for_array(num: int):
@@ -79,7 +79,7 @@ def code_gen(action_symbol):
         ss.append(tree_list[len(tree_list)-1])
     elif action_symbol == "#add_id":
         tl = len(ss)
-        symbols.append(Symbol(ss[tl-1], get_temp(), "var", 0, ss[tl-2], cs.scope_name))
+        symbols.append(Symbol(ss[tl-1], int(get_temp()), "var", 0, ss[tl-2], cs.scope_name))
         ss.pop()
         ss.pop()
     elif action_symbol == "#add_array":
@@ -88,13 +88,13 @@ def code_gen(action_symbol):
         array_address = get_space_for_array(no_args)
         address = get_temp()
         pb.append(ProgramLine('ASSIGN', f'#{array_address}', address, ''))
-        symbols.append(Symbol(ss[tl-1], address, "array", no_args, ss[tl-2], cs.scope_name))
+        symbols.append(Symbol(ss[tl-1], int(address), "array", no_args, ss[tl-2], cs.scope_name))
         ss.pop()
         ss.pop()
     elif action_symbol == "#add_fun":
         tl = len(ss)
         address = get_temp()
-        symbols.append(Symbol(ss[tl - 1], address, "fun", 0, ss[tl - 2], cs.scope_name))
+        symbols.append(Symbol(ss[tl - 1], int(address), "fun", 0, ss[tl - 2], cs.scope_name))
         cs.scope_name = ss[tl-1]
         np.index = 0
         get_temp()
@@ -109,20 +109,20 @@ def code_gen(action_symbol):
     elif action_symbol == "#inc_par":
         np.index += 1
     elif action_symbol == "#set_nopar":
-        s = get_symbol(cs.scope_name, "fun", "0")
+        s = get_symbol(cs.scope_name, "0")
         s.no_args = np.index
     elif action_symbol == "#set_fun_pointer":
-        s = get_symbol(cs.scope_name, "fun", "0")
+        s = get_symbol(cs.scope_name, "0")
         pb.append(ProgramLine("ASSIGN", f'#{len(pb)}', s.address, ''))
         if cs.scope_name == 'main':
             pb[0] = ProgramLine("JP", f'{len(pb)}', '', '')
     elif action_symbol == "#pop":
         ss.pop()
     elif action_symbol == '#return_jp':
-        s = get_symbol(cs.scope_name, "fun", "0")
+        s = get_symbol(cs.scope_name, "0")
         pb.append(ProgramLine('JP', f'@{(s.address + 8)}', '', ''))
     elif action_symbol == '#return_sjp':
-        s = get_symbol(cs.scope_name, "fun", "0")
+        s = get_symbol(cs.scope_name, "0")
         pb.append(ProgramLine('ASSIGN', ss.pop(), str(s.address + 4), ''))
         pb.append(ProgramLine('JP', f'@{(s.address + 8)}', '', ''))
     elif action_symbol == "#get_id":
@@ -136,7 +136,7 @@ def code_gen(action_symbol):
         temp2 = get_temp()
         pb.append(ProgramLine('ADD', temp1, ss.pop(), temp2))
         temp3 = get_temp()
-        pb.append(ProgramLine('ASSIGN', f'@{temp2}', temp3))
+        pb.append(ProgramLine('ASSIGN', f'@{temp2}', temp3, ''))
         ss.append(temp3)
     elif action_symbol == '#get_num':
         ss.append(f'(#{tree_list[len(tree_list) - 1]})')
@@ -175,4 +175,5 @@ def code_gen(action_symbol):
         get_temp()
         get_temp()
         get_temp()
-
+    else:
+        print('ERROR!', action_symbol)
