@@ -14,7 +14,7 @@ class ProgramLine:
 
 @dataclass
 class TemporaryIndex:
-    temp_index: int
+    index: int
 
 
 @dataclass
@@ -27,5 +27,12 @@ class Symbol:
     scope: str
 
 
+@dataclass
+class Scope:
+    scope_name: str
+
+
+current_scope = Scope("0")
 temps = TemporaryIndex(1000)
 arrays = TemporaryIndex(2000)
+no_params = TemporaryIndex(0)

@@ -3,6 +3,8 @@ from code_generation.models import Symbol
 from code_generation.models import temps as t
 from code_generation.models import arrays as a
 from compiler import tree_list
+from code_generation.models import current_scope as cs
+from code_generation.models import no_params as np
 
 pb = []
 ss = []
@@ -10,23 +12,28 @@ symbols = []
 
 
 def get_temp():
-    ss.append(t.temp_index)
+    ss.append(t.index)
     ss.append('#0')
     code_gen('#assign')
-    t.temp_index += 4
+    t.index += 4
     ss.pop()
-    return str(t.temp_index - 4)
+    return str(t.index - 4)
 
 
 def get_space_for_array(num: int):
     for i in range(num):
-        ss.append(a.temp_index)
+        ss.append(a.index)
         ss.append('#0')
         code_gen('#assign')
-        a.temp_index += 4
+        a.index += 4
         ss.pop()
-    return str(a.temp_index - 4*num)
+    return str(a.index - 4 * num)
 
+def get_symbol(lexeme: str, typ: str, scope: str):
+    for s in symbols:
+        if s.lexeme == lexeme and s.type == typ and s.scope == scope:
+            return s
+    return "none"
 
 def code_gen(action_symbol):
     if action_symbol == '#assign':
@@ -47,7 +54,13 @@ def code_gen(action_symbol):
     elif action_symbol == '#save':
         ss.append(len(pb))
         pb.append('?')
-
+    elif action_symbol == '#save_r':
+        ln = len(pb)
+        pb.append(ProgramLine('JP', str(ln+2), '', ''))
+        ss.append(ln+1)
+        pb.append('?')
+    elif action_symbol == '#set_break':
+        pb.append(ProgramLine('JP', ss[len(ss)-1], '', ''))
     elif action_symbol == '#jp':
         pb[int(ss.pop())] = ProgramLine('JP', str(len(pb)), '', '')
     elif action_symbol == '#jpf_if':
@@ -56,7 +69,46 @@ def code_gen(action_symbol):
         ss.append(len(pb))
         pb.append('?')
     elif action_symbol == '#jpf_repeat':
-        temp = ss.pop()
-        pb[int(ss.pop())] = ProgramLine('JPF', temp, str(len(pb)), '')
+        tl = len(ss)
+        pb.append(ProgramLine('JPF', ss[tl-1], str(int(ss[tl - 2]) + 1), ''))
+        pb[int(ss[tl-2])] = ProgramLine('JP', str(len(pb)), '', '')
+        ss.pop()
+        ss.pop()
     elif action_symbol == "#gp_id":
         ss.append(tree_list[len(tree_list)-1])
+    elif action_symbol == "#add_id":
+        tl = len(ss)
+        symbols.append(Symbol(ss[tl-1], get_temp(), "var", 0, ss[tl-2], cs.scope_name))
+        ss.pop()
+        ss.pop()
+    elif action_symbol == "#add_array":
+        tl = len(ss)
+        no_args = int(ss.pop())
+        array_address = get_space_for_array(no_args)
+        address = get_temp()
+        pb.append(ProgramLine('ASSIGN', f'(#{array_address})', address, ''))
+        symbols.append(Symbol(ss[tl-1], address, "array", no_args, ss[tl-2], cs.scope_name))
+        ss.pop()
+        ss.pop()
+    elif action_symbol == "#add_fun":
+        tl = len(ss)
+        address = get_temp()
+        symbols.append(Symbol(ss[tl - 1], address, "fun", 0, ss[tl - 2], cs.scope_name))
+        cs.scope_name = ss[tl-1]
+        np.index = 0
+        get_temp()
+        get_temp()
+        ss.pop()
+        ss.pop()
+    elif action_symbol == "#add_pararr":
+        tl = len(ss)
+        symbols.append(Symbol(ss[tl - 1], get_temp(), "arr", 0, ss[tl - 2], cs.scope_name))
+        ss.pop()
+        ss.pop()
+    elif action_symbol == "#inc_par":
+        np.index += 1
+    elif action_symbol == "#set_nopar":
+        s = get_symbol(cs.scope_name, "fun", "0")
+        s.no_args = np.index
+    elif action_symbol == "#pop":
+        ss.pop()
