@@ -154,11 +154,13 @@ def code_gen(action_symbol):
         alt = tree_list[len(tree_list) - 1][
               tree_list[len(tree_list) - 1].index(',') + 2: len(tree_list[len(tree_list) - 1]) - 1]
         ss.append(f'#{alt}')
+        print("hello")
     elif action_symbol == '#reset_no':
         np.index = 0
     elif action_symbol == "#add_arg":
         temp1 = get_temp()
         pb.append(ProgramLine('MULT', "#4", f'#{np.index}', temp1))
+        np.index = np.index + 1
         temp2 = get_temp()
         lt = len(ss)
         pb.append(ProgramLine('ADD', f'#{ss[lt - 2]}', "#12", temp2))
@@ -191,6 +193,8 @@ def code_gen(action_symbol):
         get_temp()
     elif action_symbol == '#reset_scope':
         if cs.scope_name != 'main':
+            s = get_symbol(cs.scope_name, "0")
+            pb.append(ProgramLine('JP', f'@{(s.address + 8)}', '', ''))
             ln = len(pb)
             pb[int(ss.pop())] = ProgramLine('JP', str(ln), '', '')
         cs.scope_name = "0"
