@@ -1,4 +1,4 @@
-from code_generation.models import ProgramLine, no_inner_condition
+from code_generation.models import ProgramLine
 from code_generation.models import Symbol
 from code_generation.models import temps as t
 from code_generation.models import arrays as a
@@ -10,6 +10,7 @@ tree_list = []
 pb = []
 ss = []
 symbols = []
+repeat_breaks = []
 
 
 def get_temp():
@@ -62,18 +63,16 @@ def code_gen(action_symbol):
     elif action_symbol.startswith('#push_'):
         ss.append(action_symbol[6:])
     elif action_symbol == '#save':
-        no_inner_condition.index = no_inner_condition.index + 1
         ss.append(len(pb))
         pb.append('?')
     elif action_symbol == '#save_r':
         ln = len(pb)
         pb.append(ProgramLine('JP', str(ln + 2), '', ''))
-        ss.append(ln + 1)
         pb.append('?')
+        repeat_breaks.append(ln+1)
     elif action_symbol == '#set_break':
-        pb.append(ProgramLine('JP', ss[len(ss) - 1 - 2 * no_inner_condition.index], '', ''))
+        pb.append(ProgramLine('JP', repeat_breaks[len(repeat_breaks)-1], '', ''))
     elif action_symbol == '#jp':
-        no_inner_condition.index = no_inner_condition.index - 1
         pb[int(ss.pop())] = ProgramLine('JP', str(len(pb)), '', '')
     elif action_symbol == '#jpf_if':
         temp = ss.pop()
@@ -81,12 +80,10 @@ def code_gen(action_symbol):
         ss.append(len(pb))
         pb.append('?')
     elif action_symbol == '#jpf_repeat':
-        tl = len(ss)
-        pb.append(ProgramLine('JPF', ss[tl - 1], str(int(ss[tl - 2]) + 1), ''))
+        address = repeat_breaks.pop()
+        pb.append(ProgramLine('JPF', ss.pop(), str(address + 1), ''))
         ln = len(pb)
-        pb[int(ss[tl - 2])] = ProgramLine('JP', str(ln), '', '')
-        ss.pop()
-        ss.pop()
+        pb[int(address)] = ProgramLine('JP', str(ln), '', '')
     elif action_symbol == "#gp_id":
         ss.append(tree_list[len(tree_list) - 1][
                   tree_list[len(tree_list) - 1].index(',') + 2: len(tree_list[len(tree_list) - 1]) - 1])
