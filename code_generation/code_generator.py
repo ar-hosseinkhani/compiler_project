@@ -1,4 +1,4 @@
-from code_generation.models import ProgramLine
+from code_generation.models import ProgramLine, no_inner_condition
 from code_generation.models import Symbol
 from code_generation.models import temps as t
 from code_generation.models import arrays as a
@@ -38,6 +38,13 @@ def get_symbol(lexeme: str, scope: str):
     return "none"
 
 
+def get_symbol_by_address(address: int):
+    for s in symbols:
+        if s.address == address:
+            return s
+    return "none"
+
+
 def code_gen(action_symbol):
     if action_symbol == '#assign':
         tl = len(ss)
@@ -55,6 +62,7 @@ def code_gen(action_symbol):
     elif action_symbol.startswith('#push_'):
         ss.append(action_symbol[6:])
     elif action_symbol == '#save':
+        no_inner_condition.index = no_inner_condition.index + 1
         ss.append(len(pb))
         pb.append('?')
     elif action_symbol == '#save_r':
@@ -63,8 +71,9 @@ def code_gen(action_symbol):
         ss.append(ln + 1)
         pb.append('?')
     elif action_symbol == '#set_break':
-        pb.append(ProgramLine('JP', ss[len(ss) - 1], '', ''))
+        pb.append(ProgramLine('JP', ss[len(ss) - 1 - 2 * no_inner_condition.index], '', ''))
     elif action_symbol == '#jp':
+        no_inner_condition.index = no_inner_condition.index - 1
         pb[int(ss.pop())] = ProgramLine('JP', str(len(pb)), '', '')
     elif action_symbol == '#jpf_if':
         temp = ss.pop()
@@ -156,11 +165,13 @@ def code_gen(action_symbol):
         ss.append(f'#{alt}')
         print("hello")
     elif action_symbol == '#reset_no':
-        np.index = 0
+        s = get_symbol_by_address(int(ss[len(ss) - 1]))
+        s.no_args_computed = 0
     elif action_symbol == "#add_arg":
+        s = get_symbol_by_address(int(ss[len(ss) - 2]))
         temp1 = get_temp()
-        pb.append(ProgramLine('MULT', "#4", f'#{np.index}', temp1))
-        np.index = np.index + 1
+        pb.append(ProgramLine('MULT', "#4", f'#{s.no_args_computed}', temp1))
+        s.no_args_computed = s.no_args_computed + 1
         temp2 = get_temp()
         lt = len(ss)
         pb.append(ProgramLine('ADD', f'#{ss[lt - 2]}', "#12", temp2))

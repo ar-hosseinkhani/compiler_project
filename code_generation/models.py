@@ -25,6 +25,7 @@ class Symbol:
     no_args: int
     data_type: str
     scope: str
+    no_args_computed: int = 0
 
 
 @dataclass
@@ -37,3 +38,4 @@ current_scope = Scope("0", False)
 temps = TemporaryIndex(1000)
 arrays = TemporaryIndex(2000)
 no_params = TemporaryIndex(0)
+no_inner_condition = TemporaryIndex(0)
