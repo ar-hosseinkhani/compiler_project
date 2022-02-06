@@ -2,8 +2,7 @@ from parser_vars import *
 from parser_vars import parser_data as data
 from rules import *
 from anytree import Node, RenderTree
-from code_generation.code_generator import code_gen, tree_list, pb
-
+from code_generation.code_generator import code_gen, tree_list, pb, semantic_errors
 
 errors = []
 tree_list_father = []
@@ -54,10 +53,14 @@ def print_program_block(pb: list):
     f.close()
 
 
+def print_semantic_errors(errors):
+    for error in errors:
+        print(error)
+
+
 while True:
     node = stack_list.pop()
     if node.startswith('#'):
-
         code_gen(node)
         continue
     father_index = stack_list_father.pop()
@@ -144,7 +147,8 @@ while True:
             tree_list.append(node)
             tree_list_father.append(father_index)
             index = len(tree_list) - 1
-            tree_list[index] = '(' + data.lookahead.type + ', ' + data.lookahead.lexeme + ')'
+            tree_list[index] = '(' + str(
+                data.lookahead.line) + '& ' + data.lookahead.type + ', ' + data.lookahead.lexeme + ')'
             data.set_next_token()
         else:
             errors.append("#" + str(data.lookahead.line) + " : syntax error, missing " + node)
@@ -156,3 +160,4 @@ while True:
 # make_error_file()
 # make_parse_file()
 print_program_block(pb)
+print_semantic_errors(semantic_errors)

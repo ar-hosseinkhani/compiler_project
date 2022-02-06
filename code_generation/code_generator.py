@@ -12,6 +12,8 @@ ss = []
 symbols = []
 repeat_breaks = []
 
+semantic_errors = []
+
 
 def get_temp():
     ss.append(t.index)
@@ -46,6 +48,24 @@ def get_symbol_by_address(address: int):
     return "none"
 
 
+def get_var_type(address):
+    if address.startswith('#'):
+        return 'int'
+    elif not address.startswith('@'):
+        s = get_symbol_by_address(int(address))
+        if type(s) == str:  # not found in symbol table
+            raise NotImplementedError
+        return s.type if s.type == 'array' else 'int'
+    else:
+        return 'array'
+
+
+def get_current_line_no():
+    for item in tree_list[::-1]:
+        if item.startswith('('):
+            return item[1: item.index('&')]
+
+
 def code_gen(action_symbol):
     if action_symbol == '#assign':
         tl = len(ss)
@@ -55,6 +75,12 @@ def code_gen(action_symbol):
     elif action_symbol == '#big':
         temp = get_temp()
         tl = len(ss)
+        type_1 = get_var_type(ss[tl - 1])
+        type_2 = get_var_type(ss[tl - 3])
+        if type_1 != type_2:
+            line = get_current_line_no()
+            semantic_errors.append(
+                f"{line}: Semantic Error! Type mismatch in operands, Got '{type_1}' instead of '{type_2}'")
         pb.append(ProgramLine(ss[tl - 2], ss[tl - 3], ss[tl - 1], temp))  # خودمون به صورت درست وارد استک میکنیم
         ss.pop()
         ss.pop()
@@ -69,9 +95,13 @@ def code_gen(action_symbol):
         ln = len(pb)
         pb.append(ProgramLine('JP', str(ln + 2), '', ''))
         pb.append('?')
-        repeat_breaks.append(ln+1)
+        repeat_breaks.append(ln + 1)
     elif action_symbol == '#set_break':
-        pb.append(ProgramLine('JP', repeat_breaks[len(repeat_breaks)-1], '', ''))
+        if len(repeat_breaks) == 0:
+            line = get_current_line_no()
+            semantic_errors.append(f"{line}: Semantic Error! No 'repeat ... until' found for 'break'")
+            return
+        pb.append(ProgramLine('JP', repeat_breaks[len(repeat_breaks) - 1], '', ''))
     elif action_symbol == '#jp':
         pb[int(ss.pop())] = ProgramLine('JP', str(len(pb)), '', '')
     elif action_symbol == '#jpf_if':
@@ -89,7 +119,11 @@ def code_gen(action_symbol):
                   tree_list[len(tree_list) - 1].index(',') + 2: len(tree_list[len(tree_list) - 1]) - 1])
     elif action_symbol == "#add_id":
         tl = len(ss)
-        symbols.append(Symbol(ss[tl - 1], int(get_temp()), "var", 0, ss[tl - 2], cs.scope_name))
+        if ss[tl - 2] != 'void':
+            symbols.append(Symbol(ss[tl - 1], int(get_temp()), "var", 0, ss[tl - 2], cs.scope_name))
+        else:
+            line = tree_list[len(tree_list) - 1][1: tree_list[len(tree_list) - 1].index('&')]
+            semantic_errors.append(f"{line}: Semantic Error! Illegal type of void for '{ss[tl - 1]}'")
         ss.pop()
         ss.pop()
     elif action_symbol == "#add_array":
@@ -149,6 +183,13 @@ def code_gen(action_symbol):
         if s == 'none':
             s = get_symbol(tree_list[len(tree_list) - 1][
                            tree_list[len(tree_list) - 1].index(',') + 2: len(tree_list[len(tree_list) - 1]) - 1], "0")
+        if s == 'none':
+            lexeme = tree_list[len(tree_list) - 1][
+                     tree_list[len(tree_list) - 1].index(',') + 2: len(tree_list[len(tree_list) - 1]) - 1]
+            line = tree_list[len(tree_list) - 1][1: tree_list[len(tree_list) - 1].index('&')]
+            semantic_errors.append(f"{line}: Semantic Error! '{lexeme}' is not defined")
+            ss.append('99999')
+            return
         ss.append(str(s.address))
     elif action_symbol == '#get_array_item':
         temp1 = get_temp()
@@ -160,7 +201,7 @@ def code_gen(action_symbol):
         alt = tree_list[len(tree_list) - 1][
               tree_list[len(tree_list) - 1].index(',') + 2: len(tree_list[len(tree_list) - 1]) - 1]
         ss.append(f'#{alt}')
-        print("hello")
+        # print("hello")
     elif action_symbol == '#reset_no':
         s = get_symbol_by_address(int(ss[len(ss) - 1]))
         s.no_args_computed = 0
@@ -179,6 +220,10 @@ def code_gen(action_symbol):
     elif action_symbol == "#call_fun":
         temp1 = get_temp()
         lt = len(ss)
+        s = get_symbol_by_address(int(ss[lt - 1]))
+        if s.no_args_computed != s.no_args:
+            line = tree_list[len(tree_list) - 1][1: tree_list[len(tree_list) - 1].index('&')]
+            semantic_errors.append(f"{line}: semantic error! Mismatch in numbers of arguments of '{s.lexeme}'")
         pb.append(ProgramLine('ADD', f'#{ss[lt - 1]}', "#8", temp1))
         ln = len(pb)
         pb.append(ProgramLine('ASSIGN', f'#{ln + 2}', f'@{temp1}', ''))
